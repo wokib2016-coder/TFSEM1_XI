@@ -198,10 +198,9 @@
             <div class="stats">
                 <span>Total Pelanggaran: <strong id="res-pelanggaran" style="color: var(--danger);"></strong></span>
                 <span>Pengurangan Nilai: <strong id="res-pengurangan" style="color: var(--danger);"></strong></span>
-                <span>Skor Ujian Kotor: <strong id="res-kotor" style="color: var(--accent);"></strong></span>
-                <span>Skor Akhir: <strong id="res-akhir" style="color: var(--success); font-size: 1.5rem;"></strong></span>
+                <!-- Skor Ujian Kotor dan Skor Akhir disembunyikan dari siswa -->
             </div>
-            <p style="color: #64748b; font-size: 0.85rem; margin-top: 15px;">Data telah dikirim ke sistem penilaian.</p>
+            <p style="color: #64748b; font-size: 0.85rem; margin-top: 15px;">Jawaban Anda telah berhasil dikirim. Silakan hubungi guru untuk melihat hasil.</p>
         </div>
     </div>
 
@@ -210,7 +209,6 @@
            KONFIGURASI
            ========================================================= */
         // ⚠️ GANTI DENGAN URL WEB APP APPS SCRIPT ANDA YANG VALID.
-        // Format: https://script.google.com/macros/s/AKfycb.../exec
         const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbw.../exec";
         const IS_URL_VALID = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(GOOGLE_SHEET_URL);
 
@@ -225,8 +223,6 @@
 
         /* =========================================================
            KUNCI JAWABAN
-           Catatan: Soal 10 sudah diverifikasi konsisten dengan 10.html
-           versi perbaikan (beli 6 kg → rugi Rp15.000). Kunci ['B','D'].
            ========================================================= */
         const ANSWER_KEYS = {
             1: { type: 'multiple', keys: ['A', 'C'], max: 2 }, 2: { type: 'multiple', keys: ['A', 'C'], max: 2 },
@@ -631,11 +627,11 @@
             const pengurangan = violationCount * 10;
             const skorAkhir = Math.max(0, totalSkorSoal - pengurangan);
 
+            // Elemen ini masih ada di HTML, tapi kita tidak menampilkannya di layar
             document.getElementById('res-pelanggaran').innerText = violationCount;
             document.getElementById('res-pengurangan').innerText = `-${pengurangan} Poin`;
-            document.getElementById('res-kotor').innerText = totalSkorSoal.toFixed(1) + " / 100";
-            document.getElementById('res-akhir').innerText = skorAkhir.toFixed(1);
-
+            
+            // Sembunyikan nilai dari siswa, tapi tetap kirim datanya
             sendToGoogleSheets(totalSkorSoal, pengurangan, skorAkhir, detailPenilaian);
         }
 
@@ -653,7 +649,6 @@
             if (!IS_URL_VALID) {
                 console.error("[ERROR] GOOGLE_SHEET_URL tidak valid. Data TIDAK dikirim:");
                 console.log(payload);
-                alert("Peringatan: URL Google Sheets belum dikonfigurasi. Data ujian tidak terkirim ke server.\n\nSilakan hubungi pengawas.");
                 return;
             }
 
