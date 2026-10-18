@@ -208,11 +208,19 @@
         /* =========================================================
            KONFIGURASI
            ========================================================= */
-        // URL Web App Apps Script Anda sudah terpasang di sini
         const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzFk2xycZH47zpyD63H9uUhYLuo9NNBpyELW34nb8RAVXK0Ye2c4IHLKwldT8MgM1AO/exec";
         const IS_URL_VALID = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(GOOGLE_SHEET_URL);
 
-        const VALID_TOKENS = ["TOKEN2026A", "TOKEN2026B", "TOKEN2026C"];
+        // ⚠️ PENGATURAN TOKEN PER KELAS
+        // Silakan ganti token di bawah ini sesuai keinginan Bapak/Ibu
+        const TOKEN_BY_KELAS = {
+            "XI-A": "TOKENA26",
+            "XI-B": "TOKENB26",
+            "XI-C": "TOKENC26",
+            "XI-D": "TOKEND26",
+            "XI-E": "TOKENE26",
+            "XI-F": "TOKENF26"
+        };
 
         const TOTAL_QUESTIONS_TO_PICK = 10;
         const TOTAL_ALL_QUESTIONS = 20;
@@ -261,7 +269,12 @@
             const token = document.getElementById('input-token').value.trim();
 
             if (!kelas || !nama || !token) { alert("Harap isi Nama, Kelas, dan Token!"); return; }
-            if (!VALID_TOKENS.includes(token)) { alert("Token tidak valid! Silakan hubungi pengawas."); return; }
+            
+            // Validasi Token Spesifik per Kelas
+            if (TOKEN_BY_KELAS[kelas] !== token) { 
+                alert("Token tidak valid untuk kelas " + kelas + "! Silakan hubungi pengawas."); 
+                return; 
+            }
 
             const loginKey = `login_${kelas}_${nama}_${token}`;
             let loginCount = parseInt(localStorage.getItem(loginKey) || "0");
@@ -627,11 +640,9 @@
             const pengurangan = violationCount * 10;
             const skorAkhir = Math.max(0, totalSkorSoal - pengurangan);
 
-            // Elemen ini masih ada di HTML, tapi kita tidak menampilkannya di layar
             document.getElementById('res-pelanggaran').innerText = violationCount;
             document.getElementById('res-pengurangan').innerText = `-${pengurangan} Poin`;
             
-            // Sembunyikan nilai dari siswa, tapi tetap kirim datanya
             sendToGoogleSheets(totalSkorSoal, pengurangan, skorAkhir, detailPenilaian);
         }
 
@@ -661,7 +672,3 @@
     </script>
 </body>
 </html>
-
-
-
-Jika data sudah masuk, berarti Anda telah sukses membuat sistem ujian otomatis yang sangat canggih! Silakan dicoba dan kabari saya hasilnya.
