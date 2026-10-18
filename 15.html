@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DYNAMICS</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        .container {
+            width: 100%;
+            max-width: 1150px;
+            background: #1e293b;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
+        }
+        .header-title {
+            font-size: 1.15rem;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+        .header-subtitle {
+            font-size: 0.9rem;
+            color: #f59e0b;
+            font-weight: bold;
+        }
+        @media (max-width: 768px) {
+            .header-top {
+                flex-direction: column;
+                gap: 4px;
+                text-align: center;
+            }
+        }
+        /* Layout Dua Kolom: Kiri Soal lebih luas, Kanan Animasi lebih ramping/sempit */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1.45fr 0.55fr;
+            gap: 20px;
+            align-items: stretch;
+        }
+        @media (max-width: 1000px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* Kolom Kiri: Panel Soal / Tabel Pernyataan */
+        .left-column {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            justify-content: space-between;
+        }
+        .experiment-title {
+            font-size: 0.9rem;
+            color: #f59e0b;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 5px;
+        }
+        .quiz-instruction {
+            font-size: 0.75rem;
+            line-height: 1.35;
+            color: #cbd5e1;
+            background: #1e293b;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+        }
+        .quiz-table-container {
+            overflow-x: auto;
+            flex: 1;
+        }
+        .quiz-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            background: #1e293b;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #334155;
+        }
+        .quiz-table th, .quiz-table td {
+            border: 1px solid #334155;
+            padding: 5px 8px;
+            text-align: left;
+        }
+        .quiz-table th {
+            background-color: #0f172a;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+        .quiz-table th.col-s, .quiz-table th.col-ts {
+            text-align: center;
+            width: 40px;
+        }
+        .quiz-table td.col-center {
+            text-align: center;
+        }
+        .quiz-table tr:hover {
+            background-color: rgba(56, 189, 248, 0.05);
+        }
+        .ans-radio {
+            cursor: pointer;
+            accent-color: #0284c7;
+            transform: scale(1.05);
+        }
+
+        /* Kolom Kanan: Canvas Dipersempit lebarnya, Tinggi Tetap 300px */
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 12px;
+            justify-content: center;
+        }
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background: #090d16;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #334155;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        /* Tombol Aksi */
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+        .sim-btn {
+            flex: 1;
+            background-color: #0284c7;
+            color: white;
+            border: none;
+            padding: 9px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-align: center;
+        }
+        .sim-btn:hover {
+            background-color: #0369a1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-top">
+            <div class="header-title">DYNAMICS</div>
+            <div class="header-subtitle">Wokib/Physics Deep Learning</div>
+        </div>
+        
+        <div class="main-grid">
+            <!-- KOLOM KIRI: Panel Soal / Tabel Pernyataan Setuju & Tidak Setuju -->
+            <div class="left-column">
+                <div class="experiment-title">Experiment on Circular Motion & Friction</div>
+                
+                <div class="quiz-instruction">
+                    Mainkan animasi di samping untuk melihat fenomena pengendara sepeda motor pada saat melintasi tikungan datar. Nyatakan pendapatmu dengan memberikan tanda pada kolom <b>SETUJU (S)</b> dan/atau <b>TIDAK SETUJU (TS)</b> terhadap pernyataan-pernyataan berikut:
+                </div>
+
+                <div class="quiz-table-container">
+                    <table class="quiz-table" id="quizTable">
+                        <thead>
+                            <tr>
+                                <th>Pernyataan</th>
+                                <th class="col-s">S</th>
+                                <th class="col-ts">TS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1. Ketika melewati tikungan, gaya gesek kinetis antara ban dan jalan berlaku sebagai gaya sentripetal.</td>
+                                <td class="col-center"><input type="radio" name="q0" value="S" class="ans-radio"></td>
+                                <td class="col-center"><input type="radio" name="q0" value="TS" class="ans-radio"></td>
+                            </tr>
+                            <tr>
+                                <td>2. Jika pada animasi, kecepatan motor melebihi 20 km/jam maka motor akan tergelincir keluar tikungan.</td>
+                                <td class="col-center"><input type="radio" name="q1" value="S" class="ans-radio"></td>
+                                <td class="col-center"><input type="radio" name="q1" value="TS" class="ans-radio"></td>
+                            </tr>
+                            <tr>
+                                <td>3. Massa pengendara sepeda motor mempengaruhi besar kecepatan maksimum aman pada tikungan.</td>
+                                <td class="col-center"><input type="radio" name="q2" value="S" class="ans-radio"></td>
+                                <td class="col-center"><input type="radio" name="q2" value="TS" class="ans-radio"></td>
+                            </tr>
+                            <tr>
+                                <td>4. Kondisi jalan yang basah (koefisien gesek lebih kecil) dapat memperbesar batas kecepatan aman di tikungan.</td>
+                                <td class="col-center"><input type="radio" name="q3" value="S" class="ans-radio"></td>
+                                <td class="col-center"><input type="radio" name="q3" value="TS" class="ans-radio"></td>
+                            </tr>
+                            <tr>
+                                <td>5. Jari-jari tikungan yang lebih besar memungkinkan pengendara membelok dengan kecepatan yang lebih tinggi secara aman.</td>
+                                <td class="col-center"><input type="radio" name="q4" value="S" class="ans-radio"></td>
+                                <td class="col-center"><input type="radio" name="q4" value="TS" class="ans-radio"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- KOLOM KANAN: Animasi Canvas (Lebar Ramping, Tinggi Tetap 300px) -->
+            <div class="right-column">
+                <div class="canvas-container" id="canvasBox">
+                    <canvas id="simCanvas"></canvas>
+                </div>
+
+                <div class="action-btns">
+                    <button class="sim-btn" id="startBtn" onclick="toggleSimulation()">Start</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- SIMULASI LINTASAN, MOTOR REALISTIS & EFEK ASAP KNALPOT ---
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function initCanvasSize() {
+            const box = document.getElementById('canvasBox');
+            canvas.width = box.clientWidth;
+            canvas.height = box.clientHeight;
+        }
+        initCanvasSize();
+
+        let bikeProgress = 0; 
+        let isRunning = false;
+        let exhaustParticles = [];
+
+        function toggleSimulation() {
+            isRunning = !isRunning;
+            document.getElementById('startBtn').innerText = isRunning ? "Pause" : "Start";
+            if (isRunning && bikeProgress >= 1) {
+                bikeProgress = 0;
+                exhaustParticles = [];
+            }
+        }
+
+        function drawScene() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (isRunning) {
+                let currPos = bikeProgress * 3;
+                let baseSpeed = 25; // Kecepatan di jalan lurus
+                
+                // Kecepatan melambat secara signifikan saat tepat melintasi tikungan (currPos antara 1 dan 2)
+                let currentSpeed = (currPos >= 1 && currPos <= 2) ? 9 : baseSpeed;
+                
+                let increment = (currentSpeed / 12000); 
+                bikeProgress += increment;
+                
+                if (bikeProgress >= 1) {
+                    bikeProgress = 1;
+                    isRunning = false;
+                    document.getElementById('startBtn').innerText = "Start";
+                }
+            }
+
+            let startX = 20;
+            let startY = 210; 
+            let cornerCenterX = 150;
+            let cornerCenterY = 210; 
+
+            // 1. Jalur Lurus Pertama (Kiri ke Kanan)
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(startX, startY - 30, cornerCenterX - startX, 60);
+
+            // 2. Tikungan Seperempat Lingkaran (Membelok ke Atas)
+            ctx.beginPath();
+            ctx.arc(cornerCenterX, cornerCenterY, 90, 1.0 * Math.PI, 1.5 * Math.PI, false); 
+            ctx.arc(cornerCenterX, cornerCenterY, 30, 1.5 * Math.PI, 1.0 * Math.PI, true);  
+            ctx.closePath();
+            ctx.fillStyle = '#475569';
+            ctx.fill();
+
+            // 3. Jalur Lurus Kedua (Vertikal ke Atas)
+            ctx.fillRect(cornerCenterX - 30, 30, 60, cornerCenterY - 30);
+
+            // Garis tengah putus-putus
+            ctx.strokeStyle = '#f8fafc';
+            ctx.lineWidth = 2.2;
+            ctx.setLineDash([6, 6]);
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(cornerCenterX - 60, startY);
+            ctx.arc(cornerCenterX, cornerCenterY, 60, 1.0 * Math.PI, 1.5 * Math.PI, false);
+            ctx.lineTo(cornerCenterX, 30);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Titik Pusat Lingkaran & Vektor Jari-Jari (R)
+            ctx.fillStyle = '#f59e0b';
+            ctx.beginPath();
+            ctx.arc(cornerCenterX, cornerCenterY, 4, 0, 2 * Math.PI);
+            ctx.fill();
+
+            let curr = bikeProgress * 3; 
+            let posX, posY, angle;
+
+            if (curr <= 1) {
+                posX = startX + (curr * (cornerCenterX - 60 - startX));
+                posY = startY;
+                angle = 0;
+            } else if (curr <= 2) {
+                let p = curr - 1; 
+                let theta = 1.0 * Math.PI + p * (0.5 * Math.PI); 
+                let rMid = 60;
+                posX = cornerCenterX + rMid * Math.cos(theta);
+                posY = cornerCenterY + rMid * Math.sin(theta);
+                angle = theta + Math.PI / 2;
+
+                // Garis Vektor Jari-Jari (R)
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 1.8;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.moveTo(cornerCenterX, cornerCenterY);
+                ctx.lineTo(posX, posY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.fillText("R", (cornerCenterX + posX) / 2 - 10, (cornerCenterY + posY) / 2 - 5);
+            } else {
+                let p = curr - 2;
+                posX = cornerCenterX;
+                posY = startY - 90 - (p * (startY - 90 - 30));
+                angle = -Math.PI / 2;
+            }
+
+            // Rambu "MAX 20 KM/JAM"
+            let signX = cornerCenterX - 85;
+            let signY = startY - 55;
+
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 3.8;
+            ctx.beginPath();
+            ctx.moveTo(signX, signY + 38);
+            ctx.lineTo(signX, signY - 2);
+            ctx.stroke();
+
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(signX, signY - 32, 32, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(signX, signY - 32, 26, 0, 2 * Math.PI);
+            ctx.fill();
+
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText("MAX 20", signX, signY - 36);
+            ctx.fillText("KM/JAM", signX, signY - 22);
+
+            // --- GENERATE PARTIKEL ASAP KNALPOT ---
+            if (isRunning && bikeProgress > 0 && bikeProgress < 1) {
+                let exhaustX = posX - Math.cos(angle) * 16;
+                let exhaustY = posY - Math.sin(angle) * 16;
+                exhaustParticles.push({
+                    x: exhaustX + (Math.random() - 0.5) * 2,
+                    y: exhaustY + (Math.random() - 0.5) * 2,
+                    radius: Math.random() * 3 + 1.5,
+                    alpha: 0.45,
+                    vx: -Math.cos(angle) * 0.4 + (Math.random() - 0.5) * 0.3,
+                    vy: -Math.sin(angle) * 0.4 + (Math.random() - 0.5) * 0.3
+                });
+            }
+
+            for (let i = exhaustParticles.length - 1; i >= 0; i--) {
+                let p = exhaustParticles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.radius += 0.12;
+                p.alpha -= 0.02;
+
+                if (p.alpha <= 0) {
+                    exhaustParticles.splice(i, 1);
+                } else {
+                    ctx.fillStyle = `rgba(203, 213, 225, ${p.alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            }
+
+            // --- PENGGAMBARAN MOTOR & PENGENDARA ---
+            ctx.save();
+            ctx.translate(posX, posY);
+            ctx.rotate(angle);
+
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.beginPath();
+            ctx.ellipse(0, 5, 15, 7.5, 0, 0, 2 * Math.PI);
+            ctx.fill();
+
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(-10, 2, 5.5, 0, 2 * Math.PI); 
+            ctx.arc(10, 2, 5.5, 0, 2 * Math.PI);  
+            ctx.fill();
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            ctx.fillStyle = '#64748b';
+            ctx.fillRect(-14, 2, 9, 3);
+
+            ctx.fillStyle = '#0284c7';
+            ctx.beginPath();
+            ctx.moveTo(-12, -1.5);
+            ctx.lineTo(8, -3.2);
+            ctx.lineTo(11, -7.5);
+            ctx.lineTo(-5, -8);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#0369a1';
+            ctx.beginPath();
+            ctx.arc(2, -6, 5.5, 0, Math.PI, true);
+            ctx.fill();
+
+            ctx.fillStyle = 'rgba(148, 163, 184, 0.7)';
+            ctx.beginPath();
+            ctx.moveTo(6, -6);
+            ctx.lineTo(10, -11);
+            ctx.lineTo(9, -6);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#f8fafc';
+            ctx.beginPath();
+            ctx.arc(-1, -11, 4.5, 0, 2 * Math.PI);
+            ctx.fill();
+
+            ctx.fillStyle = '#f59e0b';
+            ctx.beginPath();
+            ctx.arc(0, -15, 3.5, 0, 2 * Math.PI);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function loop() {
+            drawScene();
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    </script>
+</body>
+</html>

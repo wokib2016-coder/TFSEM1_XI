@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DYNAMICS</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        .container {
+            width: 100%;
+            max-width: 1350px;
+            background: #1e293b;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
+        }
+        .header-title {
+            font-size: 1.15rem;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+        .header-subtitle {
+            font-size: 0.9rem;
+            color: #f59e0b;
+            font-weight: bold;
+        }
+        @media (max-width: 768px) {
+            .header-top {
+                flex-direction: column;
+                gap: 4px;
+                text-align: center;
+            }
+        }
+        /* Layout Dua Kolom Utama (Kiri: Soal, Kanan: Virtual Labs) */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: stretch;
+        }
+        @media (max-width: 1000px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* Kolom Kiri: Panel Soal / Tabel Pernyataan Setuju & Tidak Setuju */
+        .left-column {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            justify-content: space-between;
+        }
+        .experiment-title {
+            font-size: 0.9rem;
+            color: #f59e0b;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 5px;
+        }
+        .quiz-instruction {
+            font-size: 0.75rem;
+            line-height: 1.35;
+            color: #cbd5e1;
+            background: #1e293b;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+        }
+        .quiz-table-container {
+            overflow-x: auto;
+            flex: 1;
+        }
+        .quiz-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            background: #1e293b;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #334155;
+        }
+        .quiz-table th, .quiz-table td {
+            border: 1px solid #334155;
+            padding: 5px 8px;
+            text-align: left;
+        }
+        .quiz-table th {
+            background-color: #0f172a;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+        .quiz-table th.col-s, .quiz-table th.col-ts {
+            text-align: center;
+            width: 40px;
+        }
+        .quiz-table td.col-center {
+            text-align: center;
+        }
+        .quiz-table tr:hover {
+            background-color: rgba(56, 189, 248, 0.05);
+        }
+        .ans-radio {
+            cursor: pointer;
+            accent-color: #0284c7;
+            transform: scale(1.05);
+        }
+
+        /* Kolom Kanan: Simulasi Canvas + Panel Kontrol Sebaris (Virtual Labs) */
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 310px;
+            background: #090d16;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #334155;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        /* Ketiga Kontrol Disusun dalam 1 Baris (Kiri, Tengah, Kanan) */
+        .controls-row {
+            display: grid;
+            grid-template-columns: 1.1fr 1.1fr 1.4fr;
+            gap: 8px;
+            align-items: center;
+        }
+        @media (max-width: 768px) {
+            .controls-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        .control-group {
+            background: #1e293b;
+            border: 1px solid #334155;
+            padding: 6px 8px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            height: 100%;
+            justify-content: center;
+        }
+        .control-group label {
+            font-size: 0.72rem;
+            color: #38bdf8;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        select {
+            width: 100%;
+            background-color: #0f172a;
+            color: #f8fafc;
+            border: 1px solid #475569;
+            padding: 4px 6px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            outline: none;
+            cursor: pointer;
+        }
+        select:focus {
+            border-color: #38bdf8;
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        input[type="range"] {
+            flex: 1;
+            accent-color: #0284c7;
+            cursor: pointer;
+            height: 5px;
+        }
+        .slider-value {
+            font-size: 0.78rem;
+            color: #f59e0b;
+            font-weight: bold;
+            min-width: 28px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-top">
+            <div class="header-title">DYNAMICS</div>
+            <div class="header-subtitle">Wokib/Physics Deep Learning</div>
+        </div>
+        
+        <div class="main-grid">
+            <!-- KOLOM KIRI: Panel Soal / Tabel Pernyataan Setuju & Tidak Setuju -->
+            <div class="left-column">
+                <div class="experiment-title">Experiment to Determine the Coefficient of Friction</div>
+                
+                <div class="quiz-instruction">
+                    Lakukan percobaan dengan memanfaatkan <b>Virtual Labs</b> di samping. Percobaan dilakukan dengan tujuan untuk mengetahui koefisien gesek antar permukaan. Berdasarkan hasil percobaan kamu lakukan, nyatakan pendapatmu dengan memberikan tanda (✔) pada kolom <b>SETUJU (S)</b> dan/atau <b>TIDAK SETUJU (TS)</b> terhadap pernyataan-pernyataan berikut:
+                </div>
+
+                <div class="quiz-table-container">
+                    <table class="quiz-table" id="quizTable">
+                        <thead>
+                            <tr>
+                                <th>Pernyataan</th>
+                                <th class="col-s">S</th>
+                                <th class="col-ts">TS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1. Koefisien gesek antara permukaan kayu terhadap kayu adalah 22°</td>
+                                <td class="col-center"><input type="radio" name="q0" value="S" class="ans-radio"></td>
+                                <td class="col-center"><input type="radio" name="q0" value="TS" class="ans-radio"></td>
+                            </tr>
+                            <tr>
+                                <td>2. Koefisien gesek antara permukaan benda dipengaruhi oleh massa permukaan</td>
+                                <td class="col-center"><input type="radio" name="q1" value="S" class="ans-radio"></td>
+                                <td class="col-center"><input type="radio" name="q1" value="TS" class="ans-radio"></td>
+                            </tr>
+                            <tr>
+                                <td>3. Koefisien gesek antara permukaan plastik terhadap kaca adalah 0,20</td>
+                                <td class="col-center"><input type="radio" name="q2" value="S" class="ans-radio"></td>
+                                <td class="col-center"><input type="radio" name="q2" value="TS" class="ans-radio"></td>
+                            </tr>
+                            <tr>
+                                <td>4. Koefisien gesek antara permukaan bahan wadah terhadap bidang luncur dipengaruhi oleh berat muatan pada wadah</td>
+                                <td class="col-center"><input type="radio" name="q3" value="S" class="ans-radio"></td>
+                                <td class="col-center"><input type="radio" name="q3" value="TS" class="ans-radio"></td>
+                            </tr>
+                            <tr>
+                                <td>5. Koefisien gesek antara permukaan bahan wadah terhadap bidang luncur tidak dipengaruhi oleh berat muatan pada wadah</td>
+                                <td class="col-center"><input type="radio" name="q4" value="S" class="ans-radio"></td>
+                                <td class="col-center"><input type="radio" name="q4" value="TS" class="ans-radio"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- KOLOM KANAN: Animasi Canvas & Panel Kontrol Sebaris (Virtual Labs) -->
+            <div class="right-column">
+                <div class="canvas-container" id="canvasBox">
+                    <canvas id="simCanvas"></canvas>
+                </div>
+
+                <!-- Kontrol Disusun Sebaris: Kiri, Tengah, Kanan -->
+                <div class="controls-row">
+                    <!-- 1. Kiri: Isi Wadah -->
+                    <div class="control-group">
+                        <label>Isi Wadah:</label>
+                        <select id="contentsSelect" onchange="updateContents(this.value)">
+                            <option value="empty">Wadah Kosong</option>
+                            <option value="wood-gravel">Kerikil Kayu</option>
+                            <option value="concrete-gravel">Kerikil Beton</option>
+                        </select>
+                    </div>
+
+                    <!-- 2. Tengah: Permukaan Kontak -->
+                    <div class="control-group">
+                        <label>Permukaan Kontak:</label>
+                        <select id="configSelect" onchange="updateConfiguration(this.value)">
+                            <option value="wood-wood">Kayu di atas Kayu</option>
+                            <option value="plastic-glass">Plastik di atas Kaca</option>
+                        </select>
+                    </div>
+
+                    <!-- 3. Kanan: Slider Sudut Teta -->
+                    <div class="control-group">
+                        <label>Sudut Kemiringan (θ):</label>
+                        <div class="slider-container">
+                            <input type="range" id="angleSlider" min="0" max="60" value="15" step="1" oninput="updateAngle(this.value)">
+                            <span class="slider-value" id="angleVal">15°</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- SIMULASI CANVAS ---
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function initCanvasSize() {
+            const box = document.getElementById('canvasBox');
+            canvas.width = box.clientWidth;
+            canvas.height = box.clientHeight;
+        }
+        initCanvasSize();
+
+        let thetaDeg = 15;
+        let currentConfig = 'wood-wood'; 
+        let contentsType = 'empty'; 
+        
+        let blockDist = 25; 
+        let blockVelocity = 0;
+
+        function getPhysicsParameters() {
+            if (currentConfig === 'wood-wood') {
+                return { mu_s: 0.40, mu_k: 0.30, criticalDeg: Math.round(Math.atan(0.40) * (180 / Math.PI)) }; 
+            } else { 
+                return { mu_s: 0.20, mu_k: 0.15, criticalDeg: Math.round(Math.atan(0.20) * (180 / Math.PI)) }; 
+            }
+        }
+
+        function updateConfiguration(val) {
+            currentConfig = val;
+            resetPosition();
+        }
+
+        function updateContents(val) {
+            contentsType = val;
+        }
+
+        function updateAngle(val) {
+            thetaDeg = parseInt(val);
+            document.getElementById('angleVal').innerText = thetaDeg + "°";
+            resetPosition();
+        }
+
+        function resetPosition() {
+            blockDist = 25;
+            blockVelocity = 0;
+        }
+
+        function drawScene() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            let thetaRad = (thetaDeg * Math.PI) / 180;
+
+            let baseX = 45;
+            let baseY = canvas.height - 35;
+            let rampLengthVal = canvas.width - 110;
+
+            let topX = baseX + rampLengthVal * Math.cos(thetaRad);
+            let topY = baseY - rampLengthVal * Math.sin(thetaRad);
+
+            // 1. Gambar Papan Bidang Miring
+            ctx.fillStyle = (currentConfig === 'plastic-glass') ? '#334155' : '#b45309';
+            ctx.beginPath();
+            ctx.moveTo(baseX, baseY);
+            ctx.lineTo(topX, topY);
+            ctx.lineTo(topX, baseY);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.strokeStyle = (currentConfig === 'plastic-glass') ? '#38bdf8' : '#f59e0b';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(baseX, baseY);
+            ctx.lineTo(topX, topY);
+            ctx.stroke();
+
+            // Sudut Teta Visual Proporsional
+            if (thetaDeg > 0) {
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(baseX, baseY, 35, -thetaRad, 0);
+                ctx.stroke();
+
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = 'bold 13px sans-serif';
+                ctx.textAlign = 'left';
+                let halfThetaRad = thetaRad / 2;
+                let labelRadius = 48;
+                let lx = baseX + labelRadius * Math.cos(-halfThetaRad);
+                let ly = baseY + labelRadius * Math.sin(-halfThetaRad);
+                ctx.fillText('θ', lx - 4, ly + 5);
+            }
+
+            // 2. Analisis Fisika Status Gerak
+            let phys = getPhysicsParameters();
+            
+            let statusText = "Diam";
+            let statusColor = "#38bdf8"; 
+
+            if (thetaDeg < phys.criticalDeg) {
+                statusText = "Diam";
+                statusColor = "#38bdf8";
+                blockVelocity = 0;
+                blockDist = 25; 
+            } else if (thetaDeg === phys.criticalDeg) {
+                statusText = "Tepat Akan Meluncur";
+                statusColor = "#f59e0b"; 
+                blockVelocity = 0;
+                blockDist = 25;
+            } else {
+                statusText = "Meluncur";
+                statusColor = "#10b981"; 
+                
+                let acceleration = 9.8 * (Math.sin(thetaRad) - phys.mu_k * Math.cos(thetaRad));
+                if (acceleration < 0) acceleration = 0;
+                
+                blockVelocity += acceleration * 0.007;
+                blockDist += blockVelocity;
+                
+                if (blockDist > rampLengthVal - 55) {
+                    blockDist = rampLengthVal - 55;
+                    blockVelocity = 0; 
+                }
+            }
+
+            // 3. Posisi Wadah Terbuka di atas Permukaan Papan
+            let boxX = topX - blockDist * Math.cos(thetaRad);
+            let boxY = topY + blockDist * Math.sin(thetaRad);
+
+            ctx.save();
+            ctx.translate(boxX, boxY);
+            ctx.rotate(-thetaRad);
+
+            let wW = 40; 
+            let wH = 24; 
+
+            // Gambar Isi Wadah
+            if (contentsType === 'wood-gravel') {
+                ctx.fillStyle = '#78350f';
+                for (let i = -14; i <= 14; i += 6) {
+                    ctx.beginPath();
+                    ctx.arc(i, -3, 3.5, 0, Math.PI * 2);
+                    ctx.arc(i + 2, -9, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (contentsType === 'concrete-gravel') {
+                ctx.fillStyle = '#64748b';
+                for (let i = -14; i <= 14; i += 6) {
+                    ctx.beginPath();
+                    ctx.arc(i, -3, 4, 0, Math.PI * 2);
+                    ctx.arc(i + 2, -9, 3.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Gambar Dinding dan Alas Wadah Terbuka
+            ctx.strokeStyle = '#e0f2fe';
+            ctx.lineWidth = 2;
+            ctx.fillStyle = 'rgba(2, 132, 199, 0.35)';
+            
+            ctx.beginPath();
+            ctx.moveTo(-wW / 2, 0);
+            ctx.lineTo(wW / 2, 0);
+            ctx.lineTo(wW / 2, -wH);
+            ctx.moveTo(-wW / 2, 0);
+            ctx.lineTo(-wW / 2, -wH);
+            ctx.stroke();
+
+            ctx.restore();
+
+            // 4. Label "VIRTUAL LABS" di Pojok Kiri Atas
+            ctx.fillStyle = '#38bdf8';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText("VIRTUAL LABS", 15, 22);
+
+            // 5. Papan Informasi di Pojok Kanan Atas
+            let boxWidth = 195;
+            let boxHeight = 50;
+            let boxXPos = canvas.width - boxWidth - 10;
+            let boxYPos = 8;
+
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.roundRect(boxXPos, boxYPos, boxWidth, boxHeight, 6);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Sudut Kemiringan (θ): ${thetaDeg}°`, boxXPos + 10, boxYPos + 18);
+            
+            ctx.fillStyle = statusColor;
+            ctx.font = 'bold 11px sans-serif';
+            ctx.fillText(`Status: ${statusText}`, boxXPos + 10, boxYPos + 35);
+        }
+
+        function loop() {
+            drawScene();
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    </script>
+</body>
+</html>

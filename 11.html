@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DYNAMICS</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        .container {
+            width: 100%;
+            max-width: 1150px;
+            background: #1e293b;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
+        }
+        .header-title {
+            font-size: 1.15rem;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+        .header-subtitle {
+            font-size: 0.9rem;
+            color: #f59e0b;
+            font-weight: bold;
+        }
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: stretch;
+        }
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            .header-top {
+                flex-direction: column;
+                gap: 4px;
+                text-align: center;
+            }
+        }
+        /* Kolom Kiri: Animasi */
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 15px;
+            justify-content: space-between;
+        }
+        /* Kolom Kanan: Soal & Quiz */
+        .right-column {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            background: #090d16;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #334155;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            flex: 1;
+            background-color: #0284c7;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        button:hover {
+            background-color: #0369a1;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        .right-column h3 {
+            font-size: 1.05rem;
+            color: #38bdf8;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 6px;
+        }
+        .question-box {
+            font-size: 0.82rem;
+            line-height: 1.45;
+            color: #cbd5e1;
+            margin-bottom: 10px;
+        }
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .option-item {
+            background: #1e293b;
+            border: 1px solid #475569;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.74rem;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .option-item:hover {
+            background: #334155;
+        }
+        .option-item input {
+            cursor: pointer;
+            accent-color: #0284c7;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-top">
+            <div class="header-title">DYNAMICS</div>
+            <div class="header-subtitle">Wokib/Physics Deep Learning</div>
+        </div>
+        
+        <div class="content-grid">
+            <!-- Kolom Kiri: Animasi Mobil & Pendorong -->
+            <div class="left-column">
+                <div class="canvas-container" id="canvasBox">
+                    <canvas id="simCanvas"></canvas>
+                </div>
+                
+                <div class="controls">
+                    <button id="startBtn" onclick="toggleAnimation()">Start Simulation</button>
+                    <button id="resetBtn" onclick="resetAnimation()">Reset</button>
+                </div>
+            </div>
+
+            <!-- Kolom Kanan: Soal & Pilihan Ganda -->
+            <div class="right-column">
+                <div>
+                    <h3>Pushing a Broken-Down Car</h3>
+                    <div class="question-box">
+                        Mainkan animasi di samping. Berdasarkan data massa mobil 800 kg dan gaya dorong 200 N tiap orang, pilih <b>dua (2) pernyataan yang benar</b> di bawah ini:
+                    </div>
+                    
+                    <div class="options-list">
+                        <label class="option-item">
+                            <input type="checkbox" name="quizOption" value="A"> A. Saat 1 atau 2 orang mendorong, mobil tetap diam karena gaya gesek masih lebih besar dari total gaya dorongnya.
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="quizOption" value="B"> B. Mobil tepat akan mulai bergerak saat didorong oleh 3 orang, berarti gaya gesek maksimum yang bekerja pada mobil bernilai 600 N.
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="quizOption" value="C"> C. Koefisien gesek statis antara ban mobil dan jalan adalah 1.
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="quizOption" value="D"> D. Saat hanya tinggal 2 orang yang mendorong, mobil bergerak stabil karena gaya dorong sama dengan gaya gesek kinetisnya.
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="quizOption" value="E"> E. Ketika jumlah pendorong dikurangi sampai hanya menjadi 1 orang, mobil melambat hingga berhenti karena gaya gesek kinetik berubah menjadi statis.
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function initCanvasSize() {
+            const box = document.getElementById('canvasBox');
+            canvas.width = box.clientWidth;
+            canvas.height = box.clientHeight;
+        }
+        initCanvasSize();
+
+        let animating = false;
+        let isPaused = false;
+        let animStep = 0; 
+        let carX = 60; 
+        let carVelocity = 0;
+        let timer = 0;
+        let wheelAngle = 0;
+        let lastInfoText = "Tekan 'Start Simulation' untuk Memulai";
+
+        function drawPerson(x, y, bodyColor, isPushing) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(0.7, 0.7);
+
+            let lean = isPushing ? 0.35 : 0;
+            ctx.rotate(lean);
+
+            // Kepala
+            ctx.fillStyle = '#fbcfe8';
+            ctx.beginPath();
+            ctx.arc(0, -32, 9, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#db2777';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Badan
+            ctx.fillStyle = bodyColor;
+            ctx.fillRect(-8, -23, 16, 22);
+
+            // Tangan
+            ctx.strokeStyle = '#fbcfe8';
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(0, -18);
+            ctx.lineTo(18, -12);
+            ctx.stroke();
+
+            // Kaki
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(-4, -1);
+            ctx.lineTo(-8, 16);
+            ctx.moveTo(4, -1);
+            ctx.lineTo(10, 16);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawCar(x, y, numPushers, infoText) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Latar Belakang Jalan
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, 0, canvas.width, y + 15);
+            
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, y + 15, canvas.width, canvas.height - (y + 15));
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, y + 15);
+            ctx.lineTo(canvas.width, y + 15);
+            ctx.stroke();
+
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([12, 12]);
+            ctx.beginPath();
+            ctx.moveTo(0, y + 45);
+            ctx.lineTo(canvas.width, y + 45);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Gambar Mobil
+            let carW = 130;
+            let carH = 40;
+            let carY = y - carH;
+
+            ctx.fillStyle = '#0284c7';
+            ctx.beginPath();
+            ctx.roundRect(x, carY + 13, carW, carH - 13, [6, 6, 3, 3]);
+            ctx.fill();
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            ctx.fillStyle = '#0369a1';
+            ctx.beginPath();
+            ctx.roundRect(x + 36, carY - 9, 60, 22, [8, 8, 0, 0]);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#93c5fd';
+            ctx.fillRect(x + 42, carY - 6, 23, 14);
+            ctx.fillRect(x + 69, carY - 6, 23, 14);
+
+            ctx.fillStyle = '#facc15';
+            ctx.fillRect(x + carW - 4, carY + 17, 4, 8);
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(x, carY + 17, 4, 8);
+
+            // Roda
+            let wheelRadius = 11;
+            let wx1 = x + 26;
+            let wx2 = x + carW - 26;
+            let wy = carY + carH;
+
+            [wx1, wx2].forEach(wx => {
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath();
+                ctx.arc(wx, wy, wheelRadius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#94a3b8';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(wx, wy);
+                ctx.rotate(wheelAngle);
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(-7, 0); ctx.lineTo(7, 0);
+                ctx.moveTo(0, -7); ctx.lineTo(0, 7);
+                ctx.stroke();
+                ctx.restore();
+            });
+
+            // Orang Pendorong
+            let colors = ['#e11d48', '#10b981', '#8b5cf6', '#f59e0b'];
+            for (let i = 0; i < numPushers; i++) {
+                let px = x - 12 - (i * 16);
+                let py = carY + 23;
+                drawPerson(px, py, colors[i % colors.length], numPushers > 0 && !isPaused);
+            }
+
+            // Papan Status & Informasi Fisika (Gaya Dorong 200 N)
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.roundRect(15, 12, 380, 85, 8);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#38bdf8';
+            ctx.font = 'bold 13px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText("Massa Mobil: 800 kg", 25, 30);
+            ctx.fillText("Gaya Dorong tiap orang: 200 N", 25, 48);
+
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 13px sans-serif';
+            ctx.fillText("Jumlah Pendorong: " + numPushers + " Orang", 25, 66);
+
+            ctx.fillStyle = '#f59e0b';
+            let displayStatus = isPaused ? "Simulasi Dijeda (Paused)" : infoText;
+            ctx.fillText("Status: " + displayStatus, 25, 84);
+        }
+
+        // --- SIKLUS ANIMASI ---
+        function animateLoop() {
+            if (!animating || isPaused) return;
+            timer++;
+
+            let currentP = 0;
+            let statusMsg = "";
+
+            if (animStep === 1) {
+                currentP = 1;
+                statusMsg = "Mobil Diam";
+                if (timer > 45) { animStep = 2; timer = 0; }
+            } 
+            else if (animStep === 2) {
+                currentP = 2;
+                statusMsg = "Mobil Diam";
+                if (timer > 45) { animStep = 3; timer = 0; }
+            } 
+            else if (animStep === 3) {
+                currentP = 3;
+                statusMsg = "Tepat akan bergerak";
+                if (timer > 45) { animStep = 4; timer = 0; carVelocity = 0.3; }
+            } 
+            else if (animStep === 4) {
+                currentP = 4;
+                statusMsg = "GLBB Dipercepat";
+                carVelocity = Math.min(carVelocity + 0.01, 1.1);
+                carX += carVelocity;
+                if (carX >= 160) { animStep = 5; timer = 0; }
+            } 
+            else if (animStep === 5) {
+                if (timer < 45) {
+                    currentP = 3;
+                    statusMsg = "GLBB Dipercepat";
+                    carVelocity = 0.95;
+                } else if (timer < 95) {
+                    currentP = 2;
+                    statusMsg = "GLB / Gerak Stabil";
+                    carVelocity = 0.85; 
+                } else {
+                    currentP = 1;
+                    statusMsg = "GLBB Diperlambat";
+                    carVelocity = Math.max(carVelocity - 0.0045, 0);
+                }
+
+                carX += carVelocity;
+
+                if (currentP === 1 && carVelocity <= 0) {
+                    animating = false;
+                    document.getElementById('startBtn').innerText = "Start Simulation";
+                }
+            }
+
+            if (currentP > 0) {
+                if (carVelocity > 0) {
+                    wheelAngle += carVelocity * 0.08;
+                }
+                lastInfoText = statusMsg;
+                drawCar(carX, 260, currentP, lastInfoText);
+            }
+
+            if (animating) {
+                requestAnimationFrame(animateLoop);
+            }
+        }
+
+        function toggleAnimation() {
+            const btn = document.getElementById('startBtn');
+
+            if (!animating) {
+                carX = 60; 
+                carVelocity = 0;
+                animStep = 1;
+                animating = true;
+                isPaused = false;
+                timer = 0;
+                wheelAngle = 0;
+                btn.innerText = "Pause";
+                requestAnimationFrame(animateLoop);
+            } else {
+                isPaused = !isPaused;
+                if (isPaused) {
+                    btn.innerText = "Resume";
+                    let currentP = animStep === 1 ? 1 : (animStep === 2 ? 2 : (animStep === 3 ? 3 : (animStep === 4 ? 4 : (timer < 45 ? 3 : (timer < 95 ? 2 : 1)))));
+                    drawCar(carX, 260, animStep === 0 ? 0 : currentP, lastInfoText);
+                } else {
+                    btn.innerText = "Pause";
+                    requestAnimationFrame(animateLoop);
+                }
+            }
+        }
+
+        function resetAnimation() {
+            animating = false;
+            isPaused = false;
+            animStep = 0;
+            carX = 60;
+            carVelocity = 0;
+            timer = 0;
+            wheelAngle = 0;
+            lastInfoText = "Tekan 'Start Simulation' untuk Memulai";
+            document.getElementById('startBtn').innerText = "Start Simulation";
+            drawCar(carX, 260, 0, lastInfoText);
+        }
+
+        drawCar(carX, 260, 0, lastInfoText);
+    </script>
+</body>
+</html>

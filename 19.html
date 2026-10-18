@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DYNAMICS - Torsi & Kesetimbangan</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        .container {
+            width: 100%;
+            max-width: 1050px;
+            background: #1e293b;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
+        }
+        .header-title {
+            font-size: 1.15rem;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+        .header-subtitle {
+            font-size: 0.9rem;
+            color: #f59e0b;
+            font-weight: bold;
+        }
+        @media (max-width: 768px) {
+            .header-top {
+                flex-direction: column;
+                gap: 4px;
+                text-align: center;
+            }
+        }
+        .main-grid {
+            display: grid;
+            /* Kolom kiri dipersempit pas untuk animasi, kolom kanan lebih luas untuk soal */
+            grid-template-columns: 0.65fr 1.35fr;
+            gap: 20px;
+            align-items: stretch;
+        }
+        @media (max-width: 1000px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .left-column-anim {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 12px;
+            justify-content: center;
+            align-self: center;
+            width: 100%;
+        }
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 290px;
+            background: #090d16;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #334155;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+        .sim-btn {
+            flex: 1;
+            background-color: #0284c7;
+            color: white;
+            border: none;
+            padding: 8px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-align: center;
+        }
+        .sim-btn:hover {
+            background-color: #0369a1;
+        }
+        .right-column-quiz {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            justify-content: space-between;
+        }
+        .experiment-title {
+            font-size: 0.9rem;
+            color: #f59e0b;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 5px;
+        }
+        .quiz-instruction {
+            font-size: 0.75rem;
+            line-height: 1.35;
+            color: #cbd5e1;
+            background: #1e293b;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+        }
+        .quiz-table-container {
+            overflow-x: auto;
+            flex: 1;
+        }
+        .quiz-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            background: #1e293b;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #334155;
+        }
+        .quiz-table th, .quiz-table td {
+            border: 1px solid #334155;
+            padding: 5px 8px;
+            text-align: left;
+        }
+        .quiz-table th {
+            background-color: #0f172a;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+        .quiz-table th.col-s, .quiz-table th.col-ts {
+            text-align: center;
+            width: 40px;
+        }
+        .quiz-table td.col-center {
+            text-align: center;
+        }
+        .quiz-table tr:hover {
+            background-color: rgba(56, 189, 248, 0.05);
+        }
+        .ans-radio {
+            cursor: pointer;
+            accent-color: #0284c7;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-top">
+            <div class="header-title">DYNAMICS</div>
+            <div class="header-subtitle">Wokib/Physics Deep Learning</div>
+        </div>
+        
+        <div class="main-grid">
+            <!-- Kolom Kiri: Animasi Simulasi (Dipersempit proporsional) -->
+            <div class="left-column-anim">
+                <div class="canvas-container" id="canvasBox">
+                    <canvas id="simCanvas"></canvas>
+                </div>
+
+                <div class="action-btns">
+                    <button class="sim-btn" id="startBtn" onclick="toggleSimulation()">Start</button>
+                </div>
+            </div>
+
+            <!-- Kolom Kanan: Soal & Kuis -->
+            <div class="right-column-quiz">
+                <div class="experiment-title">Experiment on Seesaw & Torque</div>
+                
+                <div class="quiz-instruction">
+                    Berdasarkan animasi jungkat-jungkit di samping (dengan g = 10 m/s<sup>2</sup>), tentukan sikap <b>SETUJU (S)</b> atau <b>TIDAK SETUJU (TS)</b> Anda pada pernyataan-pernyataan berikut dengan memberi tanda centang (&checkmark;):
+                </div>
+
+                <div class="quiz-table-container">
+                    <table class="quiz-table" id="quizTable">
+                        <thead>
+                            <tr>
+                                <th>Pernyataan</th>
+                                <th class="col-s">S</th>
+                                <th class="col-ts">TS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1. Berat total buah dalam satu keranjang adalah 20 N.</td>
+                                <td class="col-center"><input type="radio" name="q0" value="S" class="ans-radio"></td>
+                                <td class="col-center"><input type="radio" name="q0" value="TS" class="ans-radio"></td>
+                            </tr>
+                            <tr>
+                                <td>2. Besar momen gaya oleh keranjang kiri terhadap poros adalah 30 N·m.</td>
+                                <td class="col-center"><input type="radio" name="q1" value="S" class="ans-radio"></td>
+                                <td class="col-center"><input type="radio" name="q1" value="TS" class="ans-radio"></td>
+                            </tr>
+                            <tr>
+                                <td>3. Besar torsi oleh keranjang 2 terhadap poros lebih besar daripada keranjang 1.</td>
+                                <td class="col-center"><input type="radio" name="q2" value="S" class="ans-radio"></td>
+                                <td class="col-center"><input type="radio" name="q2" value="TS" class="ans-radio"></td>
+                            </tr>
+                            <tr>
+                                <td>4. Agar kedudukan kedua keranjang menjadi seimbang, jeruk pada keranjang 1 harus diambil 2.</td>
+                                <td class="col-center"><input type="radio" name="q3" value="S" class="ans-radio"></td>
+                                <td class="col-center"><input type="radio" name="q3" value="TS" class="ans-radio"></td>
+                            </tr>
+                            <tr>
+                                <td>5. Agar kedudukan kedua keranjang menjadi seimbang, keranjang 2 harus ditambah 1 melon.</td>
+                                <td class="col-center"><input type="radio" name="q4" value="S" class="ans-radio"></td>
+                                <td class="col-center"><input type="radio" name="q4" value="TS" class="ans-radio"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function initCanvasSize() {
+            const box = document.getElementById('canvasBox');
+            canvas.width = box.clientWidth;
+            canvas.height = box.clientHeight;
+        }
+        initCanvasSize();
+
+        let isRunning = false;
+        let animProgress = 0; 
+
+        function toggleSimulation() {
+            isRunning = !isRunning;
+            document.getElementById('startBtn').innerText = isRunning ? "Reset" : "Start";
+            if (!isRunning) {
+                animProgress = 0;
+            }
+        }
+
+        function drawMiniMelon(x, y) {
+            ctx.fillStyle = '#22c55e';
+            ctx.beginPath();
+            ctx.arc(x, y, 9, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#14532d';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(x, y, 9, 0.2, Math.PI - 0.2);
+            ctx.stroke();
+        }
+
+        function drawMiniOrange(x, y) {
+            ctx.fillStyle = '#ff7b00';
+            ctx.beginPath();
+            ctx.arc(x, y, 7.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#c2410c';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
+
+        function drawBasket(x, y, labelTitle, angle) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+
+            ctx.fillStyle = '#854d0e';
+            ctx.beginPath();
+            ctx.roundRect(-22, -26, 44, 26, [0, 0, 8, 8]);
+            ctx.fill();
+            ctx.strokeStyle = '#ca8a04';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = '#22c55e';
+            ctx.beginPath(); ctx.arc(0, -32, 9, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#14532d'; ctx.lineWidth = 1.5; ctx.stroke();
+
+            ctx.fillStyle = '#ff7b00';
+            let jerukX = [-16, -8, 0, 8, 16];
+            for (let jx of jerukX) {
+                ctx.beginPath(); 
+                ctx.arc(jx, -20, 4.5, 0, Math.PI * 2); 
+                ctx.fill();
+                ctx.strokeStyle = '#c2410c'; 
+                ctx.lineWidth = 1; 
+                ctx.stroke();
+            }
+
+            ctx.restore();
+
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(labelTitle, 0, -52);
+            ctx.restore();
+        }
+
+        function drawVectorBar(centerX, centerY, targetX, targetY, text, angle) {
+            ctx.save();
+            let offsetDist = 18;
+            let dx = Math.sin(angle) * offsetDist;
+            let dy = Math.cos(angle) * offsetDist;
+
+            let startX = centerX + dx;
+            let startY = centerY + dy;
+            let endX = targetX + dx;
+            let endY = targetY + dy;
+
+            ctx.strokeStyle = '#38bdf8';
+            ctx.fillStyle = '#38bdf8';
+            ctx.lineWidth = 2;
+
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(startX, startY, 3, 0, Math.PI * 2);
+            ctx.arc(endX, endY, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            let midX = (startX + endX) / 2;
+            let midY = (startY + endY) / 2;
+
+            ctx.translate(midX, midY);
+            ctx.rotate(angle);
+
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillText(text, 0, 16);
+            ctx.restore();
+        }
+
+        function drawScene() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            let centerX = canvas.width / 2;
+            let centerY = canvas.height / 2 + 25;
+            
+            let maxBeamLength = 100; 
+            let leftBasketOffset = maxBeamLength * 0.90;   
+            let rightBasketOffset = maxBeamLength * 0.60;  
+
+            if (isRunning && animProgress < 1) {
+                animProgress += 0.02;
+                if (animProgress > 1) animProgress = 1;
+            } else if (!isRunning && animProgress > 0) {
+                animProgress -= 0.02;
+                if (animProgress < 0) animProgress = 0;
+            }
+
+            let maxAngle = 0.22; 
+            let currentAngle = -animProgress * maxAngle; 
+
+            ctx.fillStyle = '#64748b';
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(centerX - 20, centerY + 45);
+            ctx.lineTo(centerX + 20, centerY + 45);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(currentAngle);
+
+            ctx.fillStyle = '#0284c7';
+            ctx.beginPath();
+            ctx.roundRect(-maxBeamLength, -6, maxBeamLength * 2, 12, 4);
+            ctx.fill();
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = '#f59e0b';
+            ctx.beginPath();
+            ctx.arc(0, 0, 4.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+
+            let boardSurfaceOffset = 6;
+            let leftX = centerX - leftBasketOffset * Math.cos(currentAngle);
+            let leftY = centerY - leftBasketOffset * Math.sin(currentAngle) - boardSurfaceOffset;
+
+            let rightX = centerX + rightBasketOffset * Math.cos(currentAngle);
+            let rightY = centerY + rightBasketOffset * Math.sin(currentAngle) - boardSurfaceOffset;
+
+            drawBasket(leftX, leftY, "Keranjang 1", currentAngle);
+            drawBasket(rightX, rightY, "Keranjang 2", currentAngle);
+
+            drawVectorBar(centerX, centerY, leftX, leftY + boardSurfaceOffset, "1,5 m", currentAngle);
+            drawVectorBar(centerX, centerY, rightX, rightY + boardSurfaceOffset, "1,0 m", currentAngle);
+
+            drawMiniMelon(14, 18);
+            ctx.fillStyle = '#f59e0b';
+            ctx.font = 'bold 10px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText("1 Melon = 1,0 kg |", 26, 22);
+
+            drawMiniOrange(132, 18);
+            ctx.fillText("1 Jeruk = 200 g", 143, 22);
+        }
+
+        function loop() {
+            drawScene();
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    </script>
+</body>
+</html>

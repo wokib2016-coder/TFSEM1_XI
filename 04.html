@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vectors</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        .container {
+            width: 100%;
+            max-width: 1050px;
+            background: #1e293b;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
+        }
+        .header-title {
+            font-size: 1.15rem;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+        .header-subtitle {
+            font-size: 0.9rem;
+            color: #f59e0b;
+            font-weight: bold;
+        }
+        .content-grid {
+            display: grid;
+            /* Kolom Kiri Animasi diperlebar proporsional (0.8fr), Kolom Kanan Soal (1.2fr) */
+            grid-template-columns: 0.8fr 1.2fr;
+            gap: 20px;
+            align-items: stretch;
+        }
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            .header-top {
+                flex-direction: column;
+                gap: 4px;
+                text-align: center;
+            }
+        }
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .right-column {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            background: #090d16;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #334155;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            flex: 1;
+            background-color: #0284c7;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        button:hover {
+            background-color: #0369a1;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        button:disabled {
+            background-color: #475569;
+            cursor: not-allowed;
+        }
+        .right-column h3 {
+            font-size: 1.05rem;
+            color: #38bdf8;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 6px;
+        }
+        .question-box {
+            font-size: 0.83rem;
+            line-height: 1.45;
+            color: #cbd5e1;
+            margin-bottom: 10px;
+        }
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .option-item {
+            background: #1e293b;
+            border: 1px solid #475569;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .option-item:hover {
+            background: #334155;
+        }
+        .option-item input {
+            cursor: pointer;
+            accent-color: #0284c7;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-top">
+            <div class="header-title">Vectors</div>
+            <div class="header-subtitle">Wokib/Physics Deep Learning</div>
+        </div>
+        
+        <div class="content-grid">
+            <!-- Kolom Kiri: Kanvas Animasi 3 Perahu & Tombol Kontrol -->
+            <div class="left-column">
+                <div class="canvas-container" id="canvasBox">
+                    <canvas id="simCanvas"></canvas>
+                </div>
+                
+                <div class="controls">
+                    <button id="startBtn" onclick="startAnimation()">Start</button>
+                    <button id="resetBtn" onclick="resetAnimation()">Reset</button>
+                </div>
+            </div>
+
+            <!-- Kolom Kanan: Soal & Pilihan Ganda -->
+            <div class="right-column">
+                <div>
+                    <h3>Comparative River Crossing</h3>
+                    <div class="question-box">
+                        Mainkan animasi di samping dan lakukan analisis terhadap hasil animasi tersebut. Tiga buah perahu menyeberangi sungai yang berarus deras. Berdasarkan prinsip penguraian vektor kecepatan dan kinematika gerak, pilih <b>dua (2) pernyataan yang benar</b> di bawah ini:
+                    </div>
+                    
+                    <div class="options-list">
+                        <label class="option-item">
+                            <input type="checkbox" name="quizOption" value="A"> A. Perahu 1 memerlukan komponen kecepatan vertikal (v_y) terbesar terhadap air agar dapat menempuh jarak tegak lurus terpendek dalam waktu yang sama dengan perahu lainnya.
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="quizOption" value="B"> B. Ketiga perahu memiliki komponen kecepatan vertikal (v_y) sama besar sehingga waktu total penyeberangannya bernilai sama persis.
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="quizOption" value="C"> C. Kelajuan resultan total (v_res) Perahu 3 bernilai paling kecil karena arah geraknya searah dengan vektor arus sungai.
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="quizOption" value="D"> D. Pergeseran horizontal Perahu 2 sepenuhnya ditentukan oleh besar kelajuan arus sungai dikalikan dengan waktu tempuh penyeberangan.
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="quizOption" value="E"> E. Vektor kecepatan arus sungai memengaruhi besarnya waktu total penyeberangan yang diperlukan oleh Perahu 2 untuk mencapai tepi seberang.
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function initCanvasSize() {
+            const box = document.getElementById('canvasBox');
+            canvas.width = box.clientWidth;
+            canvas.height = box.clientHeight;
+        }
+        initCanvasSize();
+
+        // Parameter Batas Sungai & Perahu disesuaikan agar seluruh lintasan tampak sempurna di dalam kanvas
+        const topBankEdge = 55;       
+        const bottomBankEdge = 325;   
+        const riverHeight = bottomBankEdge - topBankEdge;
+
+        // Posisi Awal Ke-3 Perahu disesuaikan agar perahu 3 aman di dalam batas kanan kanvas
+        const startX1 = 45;
+        const startX2 = 110;
+        const startX3 = 175;
+        const startY = bottomBankEdge;
+
+        const Vy = -50;       // Komponen kecepatan ke atas
+        const vCurrentX = 14; // Kecepatan arus sungai ke kanan
+
+        // Komponen Kecepatan Perahu Relatif Terhadap Air (V_perahu_x)
+        const vBoatX1 = -14;  // Perahu 1: Menyimpang ke kiri (hulu)
+        const vBoatX2 = 0;    // Perahu 2: Tegak lurus aliran air
+        const vBoatX3 = 14;   // Perahu 3: Menyimpang ke kanan (hilir)
+
+        // Resultan Kecepatan Horizontal (V_x total)
+        const vx1 = vBoatX1 + vCurrentX; // 0 (lurus vertikal)
+        const vx2 = vBoatX2 + vCurrentX; // 14 (bergeser ke kanan)
+        const vx3 = vBoatX3 + vCurrentX; // 28 (bergeser lebih jauh ke kanan, aman di dalam canvas)
+
+        const crossTime = riverHeight / Math.abs(Vy); 
+
+        let startTime = null;
+        let animating = false;
+        let globalTime = 0;
+
+        function drawScene(elapsedTime) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Background Sungai & Daratan
+            ctx.fillStyle = '#1e293b'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Daratan Atas (Seberang)
+            ctx.fillStyle = '#065f46';
+            ctx.fillRect(0, 0, canvas.width, topBankEdge);
+            ctx.fillStyle = '#f97316'; 
+            ctx.fillRect(0, topBankEdge - 2, canvas.width, 2);
+
+            // Badan Sungai (Biru)
+            ctx.fillStyle = '#2563eb';
+            ctx.fillRect(0, topBankEdge, canvas.width, riverHeight);
+
+            // Efek Gelombang Air Mengalir ke Kanan
+            drawFlowingWaves(globalTime);
+
+            // Daratan Bawah (Tempat Start)
+            ctx.fillStyle = '#065f46';
+            ctx.fillRect(0, bottomBankEdge, canvas.width, canvas.height - bottomBankEdge);
+            ctx.fillStyle = '#f97316';
+            ctx.fillRect(0, bottomBankEdge, canvas.width, 2);
+
+            // 2. Hitung Posisi Ke-3 Perahu Berdasarkan Waktu
+            let currentT = elapsedTime;
+            if (currentT > crossTime) currentT = crossTime;
+
+            const curX1 = startX1 + vx1 * currentT;
+            const curY1 = startY + Vy * currentT;
+
+            const curX2 = startX2 + vx2 * currentT;
+            const curY2 = startY + Vy * currentT;
+
+            const curX3 = startX3 + vx3 * currentT;
+            const curY3 = startY + Vy * currentT;
+
+            // 3. Gambar Jejak Lintasan (Trail)
+            drawTrajectoryTrail(startX1, startY, curX1, curY1, '#38bdf8'); // Biru (1)
+            drawTrajectoryTrail(startX2, startY, curX2, curY2, '#f97316'); // Oranye (2)
+            drawTrajectoryTrail(startX3, startY, curX3, curY3, '#db2777'); // Magenta (3)
+
+            // 4. Gambar Ke-3 Perahu beserta Angka Label (1, 2, 3)
+            drawBoat(curX1, curY1, '#8B4513', '#38bdf8', Math.atan2(Vy, vBoatX1), "1");
+            drawBoat(curX2, curY2, '#8B4513', '#f97316', Math.atan2(Vy, vBoatX2), "2");
+            drawBoat(curX3, curY3, '#8B4513', '#db2777', Math.atan2(Vy, vBoatX3), "3");
+        }
+
+        function drawFlowingWaves(time) {
+            ctx.save();
+            ctx.translate(0, topBankEdge);
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+            ctx.lineCap = 'round';
+
+            const spacingX = 60;
+            const offsetX = (time * 35) % spacingX;
+
+            for (let y = 30; y < riverHeight; y += 40) {
+                for (let x = -spacingX + offsetX; x < canvas.width + spacingX; x += spacingX) {
+                    ctx.beginPath();
+                    ctx.arc(x, y, 8, -Math.PI / 2, Math.PI / 2);
+                    ctx.stroke();
+                }
+            }
+            ctx.restore();
+        }
+
+        function drawTrajectoryTrail(x1, y1, x2, y2, color) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 4]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function drawBoat(x, y, colorBody, colorAccent, angle, labelNumber) {
+            ctx.save();
+            ctx.translate(x, y);
+
+            // Gambar Angka Label Besar di atas Perahu (tidak ikut berotasi agar tetap tegak terbaca)
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 15px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText("(" + labelNumber + ")", 0, -22);
+
+            ctx.rotate(angle + Math.PI / 2);
+
+            // Bayangan Perahu
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+            ctx.beginPath();
+            ctx.ellipse(3, 4, 7, 16, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Lambung Perahu
+            ctx.beginPath();
+            ctx.moveTo(0, -16); 
+            ctx.lineTo(-6, -2); 
+            ctx.lineTo(-4, 12);  
+            ctx.lineTo(4, 12);   
+            ctx.lineTo(6, -2); 
+            ctx.closePath();
+            
+            ctx.fillStyle = colorBody;
+            ctx.fill();
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#f8fafc';
+            ctx.stroke();
+            
+            // Aksen Warna di Buritan Perahu
+            ctx.fillStyle = colorAccent;
+            ctx.fillRect(-2, 5, 4, 4);
+            
+            ctx.restore();
+        }
+
+        let lastTimestamp = 0;
+        function animate(timestamp) {
+            if (!startTime) {
+                startTime = timestamp;
+                lastTimestamp = timestamp;
+            }
+            let deltaTime = (timestamp - lastTimestamp) / 1000;
+            lastTimestamp = timestamp;
+
+            globalTime += deltaTime;
+            let elapsedTime = (timestamp - startTime) / 1000;
+
+            drawScene(elapsedTime);
+
+            if (animating) {
+                if (elapsedTime < crossTime) {
+                    requestAnimationFrame(animate);
+                } else {
+                    animating = false;
+                    document.getElementById('startBtn').disabled = false;
+                }
+            }
+        }
+
+        function startAnimation() {
+            if (animating) return;
+            animating = true;
+            startTime = null;
+            globalTime = 0;
+            document.getElementById('startBtn').disabled = true;
+            requestAnimationFrame(animate);
+        }
+
+        function resetAnimation() {
+            animating = false;
+            startTime = null;
+            globalTime = 0;
+            document.getElementById('startBtn').disabled = false;
+            drawScene(0);
+        }
+
+        drawScene(0); // Render state awal saat halaman dimuat
+    </script>
+</body>
+</html>

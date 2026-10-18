@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DYNAMICS</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        .container {
+            width: 100%;
+            max-width: 1150px;
+            background: #1e293b;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
+        }
+        .header-title {
+            font-size: 1.15rem;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+        .header-subtitle {
+            font-size: 0.9rem;
+            color: #f59e0b;
+            font-weight: bold;
+        }
+        @media (max-width: 768px) {
+            .header-top {
+                flex-direction: column;
+                gap: 4px;
+                text-align: center;
+            }
+        }
+        /* Layout Dua Kolom: Kiri Animasi, Kanan Soal */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 0.55fr 1.45fr;
+            gap: 20px;
+            align-items: stretch;
+        }
+        @media (max-width: 1000px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* Kolom Kiri: Animasi Canvas */
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 12px;
+            justify-content: center;
+        }
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background: #090d16;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #334155;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+        .sim-btn {
+            flex: 1;
+            background-color: #0284c7;
+            color: white;
+            border: none;
+            padding: 9px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-align: center;
+        }
+        .sim-btn:hover {
+            background-color: #0369a1;
+        }
+
+        /* Kolom Kanan: Panel Soal / Tabel Pernyataan */
+        .right-column {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            justify-content: space-between;
+        }
+        .experiment-title {
+            font-size: 0.9rem;
+            color: #f59e0b;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 5px;
+        }
+        .quiz-instruction {
+            font-size: 0.75rem;
+            line-height: 1.35;
+            color: #cbd5e1;
+            background: #1e293b;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+        }
+        .quiz-table-container {
+            overflow-x: auto;
+            flex: 1;
+        }
+        .quiz-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            background: #1e293b;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #334155;
+        }
+        .quiz-table th, .quiz-table td {
+            border: 1px solid #334155;
+            padding: 5px 8px;
+            text-align: left;
+        }
+        .quiz-table th {
+            background-color: #0f172a;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+        .quiz-table th.col-s, .quiz-table th.col-ts {
+            text-align: center;
+            width: 40px;
+        }
+        .quiz-table td.col-center {
+            text-align: center;
+        }
+        .quiz-table tr:hover {
+            background-color: rgba(56, 189, 248, 0.05);
+        }
+        .ans-radio {
+            cursor: pointer;
+            accent-color: #0284c7;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-top">
+            <div class="header-title">DYNAMICS</div>
+            <div class="header-subtitle">Wokib/Physics Deep Learning</div>
+        </div>
+        
+        <div class="main-grid">
+            <!-- KOLOM KIRI: Animasi Canvas -->
+            <div class="left-column">
+                <div class="canvas-container" id="canvasBox">
+                    <canvas id="simCanvas"></canvas>
+                </div>
+
+                <div class="action-btns">
+                    <button class="sim-btn" id="startBtn" onclick="toggleSimulation()">Start</button>
+                </div>
+            </div>
+
+            <!-- KOLOM KANAN: Panel Soal / Tabel Pernyataan Setuju & Tidak Setuju -->
+            <div class="right-column">
+                <div class="experiment-title">Hit or Get Hit</div>
+                
+                <div class="quiz-instruction">
+                    Mainkan animasi di samping untuk melihat fenomena tumbukan antara dua mobil identik. Nyatakan pendapatmu dengan memberikan tanda pada kolom <b>SETUJU (S)</b> dan/atau <b>TIDAK SETUJU (TS)</b> terhadap pernyataan-pernyataan berikut:
+                </div>
+
+                <div class="quiz-table-container">
+                    <table class="quiz-table" id="quizTable">
+                        <thead>
+                            <tr>
+                                <th>Pernyataan</th>
+                                <th class="col-s">S</th>
+                                <th class="col-ts">TS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1. Peristiwa pada animasi berlangsung secara lenting sempurna.</td>
+                                <td class="col-center"><input type="radio" name="q0" value="S" class="ans-radio"></td>
+                                <td class="col-center"><input type="radio" name="q0" value="TS" class="ans-radio"></td>
+                            </tr>
+                            <tr>
+                                <td>2. Total momentum linear sistem sebelum tumbukan bernilai sama dengan total momentum linear sistem setelah tumbukan.</td>
+                                <td class="col-center"><input type="radio" name="q1" value="S" class="ans-radio"></td>
+                                <td class="col-center"><input type="radio" name="q1" value="TS" class="ans-radio"></td>
+                            </tr>
+                            <tr>
+                                <td>3. Sesaat setelah menabrak, mobil pertama tetap bergerak maju mendahului mobil kedua dengan kecepatan semula.</td>
+                                <td class="col-center"><input type="radio" name="q2" value="S" class="ans-radio"></td>
+                                <td class="col-center"><input type="radio" name="q2" value="TS" class="ans-radio"></td>
+                            </tr>
+                            <tr>
+                                <td>4. Energi kinetik total sistem sesaat sebelum dan sesudah tumbukan lenting sempurna adalah kekal (sama besar).</td>
+                                <td class="col-center"><input type="radio" name="q3" value="S" class="ans-radio"></td>
+                                <td class="col-center"><input type="radio" name="q3" value="TS" class="ans-radio"></td>
+                            </tr>
+                            <tr>
+                                <td>5. Jika massa mobil kedua jauh lebih besar daripada mobil pertama, mobil pertama akan terpental ke belakang dengan kecepatan tinggi.</td>
+                                <td class="col-center"><input type="radio" name="q4" value="S" class="ans-radio"></td>
+                                <td class="col-center"><input type="radio" name="q4" value="TS" class="ans-radio"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- PENGATURAN SUARA PEREMPUAN HISTERIS & EFEK DRAMATIS ---
+        let audioCtx = null;
+        let femaleVoice = null;
+
+        function loadVoices() {
+            if ('speechSynthesis' in window) {
+                let voices = window.speechSynthesis.getVoices();
+                femaleVoice = voices.find(v => (v.name.includes('Google') || v.name.includes('Zira') || v.name.includes('Victoria') || v.name.includes('Siri') || v.name.includes('Female')) && v.lang.includes('en')) || voices[0];
+            }
+        }
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = loadVoices;
+            loadVoices();
+        }
+
+        function playHystericalFemaleVoice() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                let utterance = new SpeechSynthesisUtterance("Oh my god! Nooooo!");
+                utterance.rate = 1.4; 
+                utterance.pitch = 2.0; 
+                utterance.volume = 1.0;
+                if (femaleVoice) utterance.voice = femaleVoice;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function playDramaticBoomAndGlass() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                let t = audioCtx.currentTime;
+
+                let osc = audioCtx.createOscillator();
+                let gainNode = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(160, t);
+                osc.frequency.exponentialRampToValueAtTime(15, t + 0.7);
+                gainNode.gain.setValueAtTime(1.0, t);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                osc.start(t);
+                osc.stop(t + 0.7);
+
+                let osc2 = audioCtx.createOscillator();
+                let gainNode2 = audioCtx.createGain();
+                osc2.type = 'sawtooth';
+                osc2.frequency.setValueAtTime(90, t);
+                osc2.frequency.linearRampToValueAtTime(10, t + 0.6);
+                gainNode2.gain.setValueAtTime(0.7, t);
+                gainNode2.gain.exponentialRampToValueAtTime(0.01, t + 0.6);
+                osc2.connect(gainNode2);
+                gainNode2.connect(audioCtx.destination);
+                osc2.start(t);
+                osc2.stop(t + 0.6);
+
+                let bufferSize = audioCtx.sampleRate * 0.5;
+                let buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                let data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * (Math.random() > 0.3 ? 1 : 0.15);
+                }
+
+                let noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+
+                let filter = audioCtx.createBiquadFilter();
+                filter.type = 'highpass';
+                filter.frequency.setValueAtTime(3000, t);
+
+                let noiseGain = audioCtx.createGain();
+                noiseGain.gain.setValueAtTime(0.9, t);
+                noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+
+                noise.connect(filter);
+                filter.connect(noiseGain);
+                noiseGain.connect(audioCtx.destination);
+
+                noise.start(t);
+                noise.stop(t + 0.5);
+
+            } catch (e) {
+                console.log("Audio diblokir browser.");
+            }
+        }
+
+        // --- SIMULASI TUMBUKAN DUA MOBIL ---
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function initCanvasSize() {
+            const box = document.getElementById('canvasBox');
+            canvas.width = box.clientWidth;
+            canvas.height = box.clientHeight;
+        }
+        initCanvasSize();
+
+        let isRunning = false;
+        let simulationTime = 0;
+        let hasPlayedVoice = false; 
+        let hasPlayedCrash = false; 
+        
+        const startX1 = 45;
+        const roadY = 210;    
+        let targetX2 = (canvas.width / 2) + 40;
+
+        let x1 = startX1;
+        let x2 = targetX2;
+        const carWidth = 60;
+        const v1_init = 2.8;
+
+        function toggleSimulation() {
+            isRunning = !isRunning;
+            document.getElementById('startBtn').innerText = isRunning ? "Pause" : "Start";
+        }
+
+        function drawCar(x, y, primaryColor, label, vText) {
+            ctx.save();
+            ctx.translate(x, y);
+
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.beginPath();
+            ctx.ellipse(0, 18, 32, 7, 0, 0, 2 * Math.PI);
+            ctx.fill();
+
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.roundRect(-22, 10, 12, 8, 3);
+            ctx.roundRect(10, 10, 12, 8, 3);
+            ctx.fill();
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(-22, 10, 12, 8);
+            ctx.strokeRect(10, 10, 12, 8);
+
+            ctx.fillStyle = primaryColor;
+            ctx.beginPath();
+            ctx.roundRect(-30, -2, 60, 18, [4, 4, 6, 6]);
+            ctx.fill();
+
+            ctx.fillStyle = primaryColor;
+            ctx.beginPath();
+            ctx.roundRect(-16, -15, 32, 15, [12, 12, 2, 2]);
+            ctx.fill();
+
+            ctx.fillStyle = '#38bdf8';
+            ctx.beginPath();
+            ctx.moveTo(-13, -12); ctx.lineTo(-3, -12); ctx.lineTo(-3, -3); ctx.lineTo(-13, -3);
+            ctx.closePath(); ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(3, -12); ctx.lineTo(13, -12); ctx.lineTo(13, -3); ctx.lineTo(3, -3);
+            ctx.closePath(); ctx.fill();
+
+            ctx.fillStyle = '#fef08a';
+            ctx.fillRect(28, 2, 3, 5);
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(-31, 2, 3, 5);
+
+            ctx.restore();
+
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 13px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, x, y + 36);
+
+            if (vText) {
+                ctx.fillStyle = '#f59e0b';
+                ctx.font = 'bold 13px sans-serif';
+                ctx.fillText(vText, x, y - 28);
+            }
+        }
+
+        function drawScene() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            targetX2 = (canvas.width / 2) + 40;
+
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(20, roadY - 38, canvas.width - 40, 76);
+
+            ctx.strokeStyle = '#f8fafc';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([12, 10]);
+            ctx.beginPath();
+            ctx.moveTo(20, roadY);
+            ctx.lineTo(canvas.width - 20, roadY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            let collisionPoint = targetX2 - carWidth; 
+            let distanceToCollision = collisionPoint - startX1;
+            let timeToCollision = distanceToCollision / (v1_init * 35);
+            let totalAnimationDuration = timeToCollision + 2.0;
+
+            if (isRunning) {
+                simulationTime += 0.016;
+
+                let voiceTriggerTime = Math.max(0, timeToCollision - 0.4);
+                if (simulationTime >= voiceTriggerTime && !hasPlayedVoice) {
+                    playHystericalFemaleVoice();
+                    hasPlayedVoice = true;
+                }
+
+                if (simulationTime < timeToCollision) {
+                    x1 = startX1 + (simulationTime * 35 * v1_init);
+                    x2 = targetX2;
+                    hasPlayedCrash = false; 
+                } else if (simulationTime <= totalAnimationDuration) {
+                    x1 = collisionPoint;
+                    
+                    if (!hasPlayedCrash) {
+                        playDramaticBoomAndGlass();
+                        hasPlayedCrash = true;
+                    }
+
+                    let timeAfterCollision = simulationTime - timeToCollision;
+                    x2 = targetX2 + (timeAfterCollision * 35 * v1_init);
+                } else {
+                    simulationTime = 0;
+                    x1 = startX1;
+                    x2 = targetX2;
+                    hasPlayedVoice = false;
+                    hasPlayedCrash = false;
+                }
+            } else if (simulationTime === 0) {
+                x1 = startX1;
+                x2 = targetX2;
+                hasPlayedVoice = false;
+                hasPlayedCrash = false;
+            }
+
+            let v1Label = (simulationTime === 0) ? "v₁ = 20 m/s" : (simulationTime < timeToCollision ? "v₁ = 20 m/s" : "v₁ = 0");
+            let v2Label = (simulationTime === 0) ? "v₂ = 0" : (simulationTime < timeToCollision ? "v₂ = 0" : "v₂' = 20 m/s");
+
+            drawCar(x1, roadY, '#0284c7', "m = m", v1Label);
+            drawCar(x2, roadY, '#ef4444', "m = m", v2Label);
+        }
+
+        function loop() {
+            drawScene();
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    </script>
+</body>
+</html>

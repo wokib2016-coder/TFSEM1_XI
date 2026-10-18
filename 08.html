@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DYNAMICS - Orang dalam Lift</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        .container {
+            width: 100%;
+            max-width: 980px;
+            background: #1e293b;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
+        }
+        .header-title {
+            font-size: 1.15rem;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+        .header-subtitle {
+            font-size: 0.9rem;
+            color: #f59e0b;
+            font-weight: bold;
+        }
+        .content-grid {
+            display: grid;
+            /* Kolom Kiri Soal diperlebar (1.45fr), Kolom Kanan Animasi diperkecil (0.55fr) */
+            grid-template-columns: 1.45fr 0.55fr;
+            gap: 20px;
+            align-items: stretch;
+        }
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            .header-top {
+                flex-direction: column;
+                gap: 4px;
+                text-align: center;
+            }
+        }
+        .left-column {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            background: #090d16;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #334155;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            flex: 1;
+            background-color: #0284c7;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        button:hover {
+            background-color: #0369a1;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        button:disabled {
+            background-color: #475569;
+            cursor: not-allowed;
+        }
+        .left-column h3 {
+            font-size: 1.05rem;
+            color: #38bdf8;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 6px;
+        }
+        .question-box {
+            font-size: 0.82rem;
+            line-height: 1.45;
+            color: #cbd5e1;
+            margin-bottom: 10px;
+        }
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .option-item {
+            background: #1e293b;
+            border: 1px solid #475569;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.77rem;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .option-item:hover {
+            background: #334155;
+        }
+        .option-item input {
+            cursor: pointer;
+            accent-color: #0284c7;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-top">
+            <div class="header-title">DYNAMICS</div>
+            <div class="header-subtitle">Wokib/Physics Deep Learning</div>
+        </div>
+        
+        <div class="content-grid">
+            <!-- Kolom Kiri: Soal & Pilihan Ganda -->
+            <div class="left-column">
+                <div>
+                    <h3>Weighing in the Elevator</h3>
+                    <div class="question-box">
+                        Mainkan animasi di samping. Seorang murid bermassa 50 kg berdiri di atas timbangan badan di dalam lift. Angka pada timbangan ternyata berubah saat lift bergerak, pilih <b>dua (2) pernyataan yang benar</b> di bawah ini:
+                    </div>
+                    
+                    <div class="options-list">
+                        <label class="option-item">
+                            <input type="checkbox" name="quizOption" value="A"> A. Saat lift diam, gaya tekan lift pada kaki orang adalah 500 N.
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="quizOption" value="B"> B. Saat lift bergerak ke atas, jumlah resultan gaya pada orang adalah nol karena berada dalam kesetimbangan dinamis.
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="quizOption" value="C"> C. Ketika lift bergerak ke atas, lift dipercepat dengan percepatan 2 m/s kuadrat.
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="quizOption" value="D"> D. Saat lift turun, gerak lift mengalami pergantian nilai percepatan.
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="quizOption" value="E"> E. Tali timbangan putus ketika angka timbangan menunjukkan 50 kg saat lift bergerak turun.
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kolom Kanan: Animasi Lift & Timbangan -->
+            <div class="right-column">
+                <div class="canvas-container" id="canvasBox">
+                    <canvas id="simCanvas"></canvas>
+                </div>
+                
+                <div class="controls">
+                    <button id="startBtn" onclick="startAnimation()">Start</button>
+                    <button id="resetBtn" onclick="resetAnimation()">Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function initCanvasSize() {
+            const box = document.getElementById('canvasBox');
+            canvas.width = box.clientWidth;
+            canvas.height = box.clientHeight;
+        }
+        initCanvasSize();
+
+        let animating = false;
+        let animStep = 0; 
+        
+        let currentLiftY = 220; 
+        const startLiftY = 220;
+        const endLiftY = 30;   
+        let pauseTimer = 0;
+
+        function drawScene(liftY, state) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // --- 1. GAMBAR RUANG LIFT (Diposisikan di tengah secara horizontal) ---
+            let liftW = 110;
+            let liftH = 120;
+            let liftX = (canvas.width - liftW) / 2; // Posisi X persis di tengah canvas
+
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(liftX, liftY, liftW, liftH);
+            ctx.fillStyle = '#0b1329';
+            ctx.fillRect(liftX, liftY, liftW, liftH);
+
+            // Kabel Baja Lift di atas
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(liftX + liftW / 2, 0);
+            ctx.lineTo(liftX + liftW / 2, liftY);
+            ctx.stroke();
+
+            // --- 2. TIMBANGAN BADAN DI DALAM LIFT ---
+            let scaleW = 75;
+            let scaleH = 16;
+            let scaleX = liftX + (liftW - scaleW) / 2;
+            let scaleY = liftY + liftH - 20;
+
+            ctx.fillStyle = '#64748b';
+            ctx.fillRect(scaleX, scaleY, scaleW, scaleH);
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(scaleX, scaleY, scaleW, scaleH);
+            
+            // Layar Digital Timbangan
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(scaleX + 8, scaleY + 2, 59, 12);
+            
+            ctx.fillStyle = '#38bdf8';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            
+            let displayKg = 50;
+            if (state === 1) displayKg = 60;      
+            else if (state === 2) displayKg = 50; 
+            else if (state === 3) displayKg = 35; 
+            else if (state === 4) displayKg = 50; 
+            else if (state === 5) displayKg = 50; 
+
+            ctx.fillText(displayKg + " kg", scaleX + scaleW / 2, scaleY + 12);
+
+            // --- 3. ORANG BERDIRI DI ATAS TIMBANGAN ---
+            let personX = liftX + liftW / 2;
+            let personY = scaleY - 56;
+
+            // Kepala
+            ctx.fillStyle = '#fbcfe8';
+            ctx.beginPath();
+            ctx.arc(personX, personY, 11, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#db2777';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Rambut
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath();
+            ctx.arc(personX, personY - 3, 11, Math.PI, Math.PI * 2);
+            ctx.fill();
+
+            // Badan
+            ctx.fillStyle = '#0284c7';
+            ctx.fillRect(personX - 11, personY + 11, 22, 30);
+
+            // Tangan
+            ctx.fillStyle = '#fbcfe8';
+            ctx.fillRect(personX - 14, personY + 13, 3, 20);
+            ctx.fillRect(personX + 11, personY + 13, 3, 20);
+
+            // Kaki
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(personX - 8, personY + 41, 6, 15);
+            ctx.fillRect(personX + 2, personY + 41, 6, 15);
+        }
+
+        // Fungsi Animasi Siklus Lengkap
+        function animateLoop() {
+            if (!animating) return;
+
+            if (animStep === 1) {
+                if (currentLiftY > endLiftY) {
+                    currentLiftY -= 0.6;
+                    drawScene(currentLiftY, 1);
+                    requestAnimationFrame(animateLoop);
+                } else {
+                    animStep = 2;
+                    pauseTimer = 0;
+                    requestAnimationFrame(animateLoop);
+                }
+            } else if (animStep === 2) {
+                pauseTimer++;
+                drawScene(currentLiftY, 2);
+                if (pauseTimer > 40) { 
+                    animStep = 3;
+                }
+                requestAnimationFrame(animateLoop);
+            } else if (animStep === 3) {
+                let midY = startLiftY - (startLiftY - endLiftY) * 0.5;
+                if (currentLiftY < midY) {
+                    currentLiftY += 0.8; 
+                    drawScene(currentLiftY, 3);
+                    requestAnimationFrame(animateLoop);
+                } else {
+                    animStep = 4;
+                    requestAnimationFrame(animateLoop);
+                }
+            } else if (animStep === 4) {
+                if (currentLiftY < startLiftY) {
+                    currentLiftY += 0.6; 
+                    drawScene(currentLiftY, 4);
+                    requestAnimationFrame(animateLoop);
+                } else {
+                    animStep = 5;
+                    pauseTimer = 0;
+                    requestAnimationFrame(animateLoop);
+                }
+            } else if (animStep === 5) {
+                pauseTimer++;
+                drawScene(startLiftY, 5);
+                if (pauseTimer > 30) {
+                    animating = false;
+                    animStep = 0;
+                }
+                requestAnimationFrame(animateLoop);
+            }
+        }
+
+        function startAnimation() {
+            if (animating) return;
+            animStep = 1;
+            animating = true;
+            requestAnimationFrame(animateLoop);
+        }
+
+        function resetAnimation() {
+            animating = false;
+            animStep = 0;
+            currentLiftY = startLiftY;
+            drawScene(startLiftY, 0);
+        }
+
+        // Inisialisasi awal
+        drawScene(startLiftY, 0);
+    </script>
+</body>
+</html>

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DYNAMICS - Physics in Business</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        .container {
+            width: 100%;
+            max-width: 980px;
+            background: #1e293b;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
+        }
+        .header-title {
+            font-size: 1.15rem;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+        .header-subtitle {
+            font-size: 0.9rem;
+            color: #f59e0b;
+            font-weight: bold;
+        }
+        .content-grid {
+            display: grid;
+            /* Kolom Kiri Animasi diperkecil (0.55fr), Kolom Kanan Soal diperlebar (1.45fr) */
+            grid-template-columns: 0.55fr 1.45fr;
+            gap: 20px;
+            align-items: stretch;
+        }
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            .header-top {
+                flex-direction: column;
+                gap: 4px;
+                text-align: center;
+            }
+        }
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .right-column {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            background: #090d16;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #334155;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            flex: 1;
+            background-color: #0284c7;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        button:hover {
+            background-color: #0369a1;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        button:disabled {
+            background-color: #475569;
+            cursor: not-allowed;
+        }
+        .right-column h3 {
+            font-size: 1.05rem;
+            color: #38bdf8;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 6px;
+        }
+        .question-box {
+            font-size: 0.82rem;
+            line-height: 1.45;
+            color: #cbd5e1;
+            margin-bottom: 10px;
+        }
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .option-item {
+            background: #1e293b;
+            border: 1px solid #475569;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.77rem;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .option-item:hover {
+            background: #334155;
+        }
+        .option-item input {
+            cursor: pointer;
+            accent-color: #0284c7;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-top">
+            <div class="header-title">DYNAMICS</div>
+            <div class="header-subtitle">Wokib/Physics Deep Learning</div>
+        </div>
+        
+        <div class="content-grid">
+            <!-- Kolom Kiri: Animasi Papan Kayu, Jejak Sudut Theta, Timbangan, & Wadah Pakcoy Besar 3D -->
+            <div class="left-column">
+                <div class="canvas-container" id="canvasBox">
+                    <canvas id="simCanvas"></canvas>
+                </div>
+                
+                <div class="controls">
+                    <button id="startBtn" onclick="startAnimation()">Start</button>
+                    <button id="resetBtn" onclick="resetAnimation()">Reset</button>
+                </div>
+            </div>
+
+            <!-- Kolom Kanan: Soal & Pilihan Ganda -->
+            <div class="right-column">
+                <div>
+                    <h3>Physics in Business</h3>
+                    <div class="question-box">
+                        Mainkan animasi di samping. Seorang pedagang sayuran pakcoy secara tak sadar menimbang barang dagangannya pada timbangan yang posisinya miring dengan sudut kemiringan sebesar &theta; terhadap lantai datar. Pilih <b>dua (2) pernyataan yang benar</b> di bawah ini:
+                    </div>
+                    
+                    <div class="options-list">
+                        <label class="option-item">
+                            <input type="checkbox" name="quizOption" value="A"> A. Akibat kemiringan timbangan, keuntungan pedagang bertambah besar
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="quizOption" value="B"> B. Nilai sudut kemiringan &theta; pada persoalan proses menimbang tersebut adalah 37°
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="quizOption" value="C"> C. Pembeli harus membayar lebih mahal akibat tingkah curang pedagang
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="quizOption" value="D"> D. Saat pembeli membeli 2 kg pakcoy, penjual kehilangan penghasilan Rp. 5.000,-
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="quizOption" value="E"> E. Total harga bayar pakcoy tetap persis sama Rp. 25.000,- baik saat timbangan datar maupun miring
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function initCanvasSize() {
+            const box = document.getElementById('canvasBox');
+            canvas.width = box.clientWidth;
+            canvas.height = box.clientHeight;
+        }
+        initCanvasSize();
+
+        let animating = false;
+        let currentAngle = 0; // Sudut kemiringan papan dalam derajat (0 hingga 37)
+        let targetAngle = 0;
+
+        function drawScene(angleDeg) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            let centerX = canvas.width / 2;
+            let centerY = canvas.height / 2 + 35;
+
+            // --- 1. PAPAN NARASI DITOPANG TIANG DI ATAS (2 Baris Teks) ---
+            let signW = 230;
+            let signH = 46; 
+            let signX = centerX - signW / 2;
+            let signY = 15;
+
+            // Tiang penyangga papan narasi ke atas
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, signY);
+            ctx.stroke();
+
+            // Papan Kayu Narasi
+            ctx.fillStyle = '#334155';
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 2;
+            ctx.fillRect(signX, signY, signW, signH);
+            ctx.strokeRect(signX, signY, signW, signH);
+
+            // Teks Baris Pertama: Dijual Pak CoY
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText("Dijual Pak CoY", centerX, signY + 14);
+
+            // Teks Baris Kedua: Rp. 10.000,-/kg
+            ctx.fillStyle = '#38bdf8';
+            ctx.font = 'bold 13px sans-serif';
+            ctx.fillText("Rp. 10.000,-/kg", centerX, signY + 32);
+
+            // --- 2. JEJAK SUDUT THETA & GARIS HORIZONTAL DI TITIK TUMPU ---
+            let pivotX = centerX - 50;
+            let pivotY = centerY + 65;
+
+            // Garis Horizontal Putus-putus dari titik tumpu ke kanan
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(pivotX, pivotY);
+            ctx.lineTo(pivotX + 65, pivotY);
+            ctx.stroke();
+            ctx.setLineDash([]); // Reset line dash
+
+            // Busur Sudut (Arc) jika sudut > 0
+            if (angleDeg > 0) {
+                let rad = (angleDeg * Math.PI) / 180;
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(pivotX, pivotY, 42, 0, -rad, true);
+                ctx.stroke();
+
+                // Teks Label Huruf Theta (θ) Diperbesar
+                ctx.fillStyle = '#f59e0b';
+                ctx.font = 'bold 18px sans-serif';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                let midRad = rad / 2;
+                let labelX = pivotX + 48 * Math.cos(-midRad);
+                let labelY = pivotY + 48 * Math.sin(-midRad);
+                ctx.fillText("θ", labelX, labelY);
+            }
+
+            // --- 3. SISTEM BIDANG MIRING (PAPAN KAYU + TIMBANGAN + WADAH & PAKCOY BESAR 3D) ---
+            let rad = (angleDeg * Math.PI) / 180;
+
+            ctx.save();
+            ctx.translate(pivotX, pivotY); // Titik tumpu rotasi di kiri bawah papan
+            ctx.rotate(-rad); // Rotasi berlawanan arah jarum jam (ujung kanan naik)
+
+            // A. Papan Kayu
+            let boardW = 180;
+            let boardH = 12;
+            ctx.fillStyle = '#b45309';
+            ctx.fillRect(0, -boardH, boardW, boardH);
+            ctx.strokeStyle = '#78350f';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(0, -boardH, boardW, boardH);
+
+            // B. Timbangan Digital di atas papan kayu
+            let scaleW = 95;
+            let scaleH = 22; 
+            let scaleX = 42;
+            let scaleY = -boardH - scaleH;
+
+            ctx.fillStyle = '#475569';
+            ctx.fillRect(scaleX, scaleY, scaleW, scaleH);
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(scaleX, scaleY, scaleW, scaleH);
+
+            // Layar Digital Timbangan (Diperbesar)
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(scaleX + 10, scaleY + 3, 75, 16);
+
+            ctx.fillStyle = '#38bdf8';
+            ctx.font = 'bold 14px sans-serif'; 
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            let displayedKg = (2.5 * Math.cos(rad)).toFixed(1);
+            ctx.fillText(displayedKg + " kg", scaleX + scaleW / 2, scaleY + 11);
+
+            // C. Wadah Kotak Pakcoy Gaya 3D di atas timbangan
+            let boxW = 64;
+            let boxH = 26;
+            let boxX = scaleX + (scaleW - boxW) / 2;
+            let boxY = scaleY - boxH;
+
+            // Samping/Efek 3D Wadah (Warna lebih gelap)
+            ctx.fillStyle = '#0369a1';
+            ctx.beginPath();
+            ctx.moveTo(boxX, boxY);
+            ctx.lineTo(boxX + 7, boxY - 7);
+            ctx.lineTo(boxX + boxW + 7, boxY - 7);
+            ctx.lineTo(boxX + boxW, boxY);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#0284c7';
+            ctx.fillRect(boxX, boxY, boxW, boxH);
+            ctx.strokeStyle = '#bae6fd';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(boxX, boxY, boxW, boxH);
+
+            // D. Tanaman Pakcoy Besar 3D (Bagian atas menjulang melebihi batas wadah)
+            let plantX = boxX + boxW / 2;
+            let plantY = boxY; // Titik tumpu di bibir atas wadah
+            
+            // Batang putih pakcoy yang tebal & subur
+            ctx.fillStyle = '#f1f5f9';
+            ctx.beginPath();
+            ctx.moveTo(plantX - 6, plantY + 4);
+            ctx.lineTo(plantX + 6, plantY + 4);
+            ctx.lineTo(plantX + 9, plantY - 14);
+            ctx.lineTo(plantX - 9, plantY - 14);
+            ctx.closePath();
+            ctx.fill();
+
+            // Daun-daun pakcoy besar rimbun (menjulang tinggi ke atas)
+            ctx.fillStyle = '#16a34a'; // Hijau tua bagian bawah/dalam
+            ctx.beginPath();
+            ctx.ellipse(plantX, plantY - 12, 18, 12, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#22c55e'; // Hijau cerah daun bagian atas & samping
+            ctx.beginPath();
+            ctx.ellipse(plantX - 16, plantY - 18, 16, 9, -0.6, 0, Math.PI * 2); // Daun kiri
+            ctx.ellipse(plantX + 16, plantY - 18, 16, 9, 0.6, 0, Math.PI * 2);  // Daun kanan
+            ctx.ellipse(plantX, plantY - 26, 20, 12, 0, 0, Math.PI * 2);       // Daun pucuk tengah
+            ctx.fill();
+
+            // Aksen urat daun halus
+            ctx.strokeStyle = '#86efac';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(plantX, plantY - 14);
+            ctx.lineTo(plantX, plantY - 32);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        // Fungsi Animasi Transisi Sudut
+        function animateLoop() {
+            if (!animating) return;
+
+            if (currentAngle < targetAngle) {
+                currentAngle += 0.8;
+                if (currentAngle >= targetAngle) {
+                    currentAngle = targetAngle;
+                    animating = false;
+                }
+                drawScene(currentAngle);
+                requestAnimationFrame(animateLoop);
+            } else if (currentAngle > targetAngle) {
+                currentAngle -= 0.8;
+                if (currentAngle <= targetAngle) {
+                    currentAngle = targetAngle;
+                    animating = false;
+                }
+                drawScene(currentAngle);
+                requestAnimationFrame(animateLoop);
+            } else {
+                animating = false;
+            }
+        }
+
+        function startAnimation() {
+            if (animating) return;
+            targetAngle = 37; // Bergerak ke sudut 37 derajat
+            animating = true;
+            requestAnimationFrame(animateLoop);
+        }
+
+        function resetAnimation() {
+            animating = false;
+            targetAngle = 0;
+            currentAngle = 0;
+            drawScene(0);
+        }
+
+        // Inisialisasi awal
+        drawScene(0);
+    </script>
+</body>
+</html>
